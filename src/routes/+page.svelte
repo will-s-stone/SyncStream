@@ -27,14 +27,14 @@
 	}
 </script>
 
-<div class="bg-vanilla-100 w-screen h-screen font-sans">
-	<h1 class="text-xl flex flex-col justify-center items-center">Enter a room code</h1>
+<h1 class="flex flex-col justify-center items-center">Enter a room code</h1>
+<div class="w-screen h-screen font-sans flex items-center justify-center">
 	<div id="centered content" class="grid grid-cols-2 gap-y-5 gap-x-5 w-fit item-center">
 		<input
 			bind:value={roomCode}
 			on:input={formValidation}
 			placeholder="Enter a Code"
-			class="bg-white/75 outline-none focus:border-slate-500 focus:bg-white border-slate-400 border-2 col-start-1 col-end-3 h-[70px] text-[40px] text-center"
+			class="bg-white/75 focus:placeholder-transparent outline-none focus:border-slate-500 focus:bg-white border-slate-400 border-2 col-start-1 col-end-3 h-[70px] text-[40px] text-center"
 		/>
 		<button
 			on:click={join}
