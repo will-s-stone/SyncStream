@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <script>
     let roomCode = '';
     function join() {
@@ -22,3 +23,10 @@
 <button class="border rounded px-4" on:click={createRoom}>Create Room</button>
 </div>
 </div>
+=======
+<h1 class="bg-moon">Enter a room code</h1>
+<input />
+<button>Join</button>
+
+<button>Create Room</button>
+>>>>>>> 51c23182a1d001a94bfcdc7ab635f865506b6770
