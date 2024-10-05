@@ -27,7 +27,7 @@
 	}
 </script>
 
-<h1 class="flex flex-col justify-center items-center">Enter a room code</h1>
+<h1 class="text-4xl flex flex-col justify-center items-center">Enter a room code</h1>
 <div class="w-screen h-screen font-sans flex items-center justify-center">
 	<div id="centered content" class="grid grid-cols-2 gap-y-5 gap-x-5 w-fit item-center">
 		<input
