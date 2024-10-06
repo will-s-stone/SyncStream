@@ -160,10 +160,9 @@
 		});
 	});
 
-	const seekVideo = (event: Event) => {
+	const seekVideo = () => {
 		const seekTime = Number(slider.value);
-		video.currentTime = seekTime;
-		duration = video.duration || 0;
+		seek(seekTime);
 	};
 
 	const handleFileUpload = (event: Event) => {
