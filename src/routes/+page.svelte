@@ -1,5 +1,12 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import ShortUniqueId from 'short-unique-id';
+
 	let acceptableCharacters = 'ABCDEFGHGJLMNPQRSTUVWXYZ0123456789';
+	const { randomUUID } = new ShortUniqueId({
+		dictionary: acceptableCharacters.split(''),
+		length: 6
+	});
 
 	let roomCode = '';
 	function join() {
@@ -10,8 +17,9 @@
 		}
 	}
 
-	function createRoom() {
-		alert('creating room...');
+	async function createRoom() {
+		const code = randomUUID();
+		if (browser) window.location.href = `/room/${code}`;
 	}
 
 	function formValidation() {
