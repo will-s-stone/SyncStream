@@ -1,8 +1,13 @@
+import defaultTheme from 'tailwindcss/defaultTheme';
+
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: ['./src/**/*.{html,js,svelte,css}'],
 	theme: {
 		extend: {
+			fontFamily: {
+				sans: ['Roboto', ...defaultTheme.fontFamily.sans]
+			},
 			colors: {
 				moonstone: {
 					50: '#e7f6f7',
