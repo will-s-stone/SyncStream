@@ -35,8 +35,8 @@
 	}
 </script>
 
-<h1 class="text-4xl flex flex-col justify-center items-center">Enter a room code</h1>
-<div class="w-screen h-screen font-sans flex items-center justify-center">
+<div class="w-screen h-screen font-sans flex flex-col items-center justify-center">
+	<h1 class="text-5xl mb-20 mx-40">Peer Stream</h1>
 	<div id="centered content" class="grid grid-cols-2 gap-y-5 gap-x-5 w-fit item-center">
 		<input
 			bind:value={roomCode}
@@ -46,11 +46,11 @@
 		/>
 		<button
 			on:click={join}
-			class="border px-4 rounded bg-moonstone-100 hover:bg-moonstone-200 transition active:bg-moonstone-300 row-start-2 row-end-3 col-start-1 col-end-2 p-2"
+			class="border px-4 text-xl rounded bg-moonstone-100 hover:bg-moonstone-200 transition active:bg-moonstone-300 row-start-2 row-end-3 col-start-1 col-end-2 p-2"
 			>Join</button
 		>
 		<button
-			class="border rounded px-4 bg-tangerine-400 hover:bg-tangerine-500 transition active:bg-tangerine-600 row-start-2 row-end-3 col-start-2 col-end-3 p-2"
+			class="border rounded px-4 text-xl bg-tangerine-400 hover:bg-tangerine-500 transition active:bg-tangerine-600 row-start-2 row-end-3 col-start-2 col-end-3 p-2"
 			on:click={createRoom}>Create Room</button
 		>
 	</div>
