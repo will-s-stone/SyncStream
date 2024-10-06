@@ -2,16 +2,59 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import Peer, { type DataConnection } from 'peerjs';
+	import { type Message, isFullVideo, isSeek, isPlayerStatus, isVideoRequest } from '$lib/protocol';
 
 	export let data: PageData;
 
 	const host = data.host;
 
-	let value: string;
 	let peer: Peer;
 	let peerId: string;
+	let uploadedArrayBuffer: ArrayBuffer | null = null;
+	let fileUploaded: boolean = false;
+	let video: HTMLVideoElement;
+	let videoSource: string;
 
-	let click: () => void;
+	let slider: HTMLInputElement;
+	let duration = 0;
+	let currentTime = 0;
+
+	// Media Commands
+	let playPause: () => void = console.log;
+	let seek: (seconds: number) => void = console.log;
+
+	const openRoom = async () => {
+		const body = new FormData();
+		body.set('peer_id', peerId);
+		await fetch('?/make-room', {
+			body,
+			method: 'POST'
+		});
+	};
+
+	const closeRoom = async () => {
+		const body = new FormData();
+		body.set('peer_id', peerId);
+		await fetch('?/delete-room', {
+			body,
+			method: 'POST'
+		});
+	};
+
+	const processCommand = async (msg: Message) => {
+		if (isPlayerStatus(msg)) {
+			if (msg.data == 'play') {
+				video.play();
+			} else {
+				video.pause();
+			}
+		} else if (isSeek(msg)) {
+			video.currentTime = msg.data;
+		} else if (isFullVideo(msg)) {
+			uploadedArrayBuffer = msg.data;
+			videoSource = URL.createObjectURL(new Blob([msg.data]));
+		}
+	};
 
 	onMount(() => {
 		peer = new Peer();
@@ -19,65 +62,135 @@
 		peer.on('open', async (id) => {
 			peerId = id;
 
-			// Send room to mongo with peer id if host
 			if (host) {
-				const body = new FormData();
-				body.set('peer_id', peerId);
-				await fetch('?/make-room', {
-					body,
-					method: 'POST'
-				});
+				openRoom();
+				const connections: { con: DataConnection; id: number }[] = [];
 
-				const connections: DataConnection[] = [];
-				peer.on('connection', (e) => {
-					connections.push(e);
-					console.log('Open!');
-					e.on('close', () => console.log('Closed'));
-					e.on('data', (e) => {
+				// Register command listeners
+				playPause = () => {
+					const e: Message = {
+						type: 'player',
+						data: video.paused ? 'play' : 'pause'
+					};
+					console.log(e);
+					for (const c of connections) {
+						c.con.send(e);
+					}
+					processCommand(e);
+				};
+				seek = (sec: number) => {
+					const e: Message = {
+						type: 'seek',
+						data: sec
+					};
+					console.log(e);
+					for (const c of connections) {
+						c.con.send(e);
+					}
+					processCommand(e);
+				};
+
+				peer.on('connection', (con) => {
+					// Setup open and close events
+					const id = connections.length;
+					connections.push({ id, con });
+					con.on('close', () => connections.filter((x) => x.id != id));
+
+					con.on('data', (e) => {
+						console.log('received data from peer');
+
 						console.log(e);
 						console.log(connections);
-						for (const c of connections) {
-							c.send(e);
-						}
-					});
-				});
 
-				click = () => {
-					console.log(value);
-					for (const c of connections) {
-						c.send(value);
-					}
-				};
+						// Broadcast all other messages globally
+						for (const c of connections) {
+							c.con.send(e);
+						}
+						processCommand(e as Message);
+					});
+
+					setTimeout(() => {
+						console.log('Sending Video Data');
+						con.send('test');
+						con.send({
+							type: 'fullVideo',
+							data: uploadedArrayBuffer
+						});
+					}, 2000);
+				});
 			}
 
 			// Connect if not the host
 			if (!host) {
+				// Register command listeners
+				playPause = () => {
+					const e: Message = {
+						type: 'player',
+						data: video.paused ? 'play' : 'pause'
+					};
+					console.log(e);
+					connection.send(e);
+				};
+				seek = (sec: number) => {
+					const e: Message = {
+						type: 'seek',
+						data: sec
+					};
+					console.log(e);
+					connection.send(e);
+				};
+
 				const hostPeerId = data.peer_id;
 				if (!hostPeerId) return;
 
 				const connection = peer.connect(hostPeerId);
 
 				// Wait 5 seconds to connect to the room, otherwise delete the room
-				const timeout = setTimeout(async () => {
-					const body = new FormData();
-					body.set('peer_id', peerId);
-					await fetch('?/delete-room', {
-						body,
-						method: 'POST'
-					});
-				}, 5000);
-				connection.on('open', () => {
-					clearTimeout(timeout);
+				const timeout = setTimeout(closeRoom, 5000);
+				connection.on('open', () => clearTimeout(timeout));
+
+				// Close room if host disconnects
+				connection.on('close', closeRoom);
+				connection.on('data', (data) => {
+					console.log(data);
+					processCommand(data as Message);
 				});
-
-				connection.on('data', console.log);
-
-				click = () => {
-					connection.send(value);
-				};
 			}
 		});
 	});
+
+	const seekVideo = (event: Event) => {
+		const seekTime = Number(slider.value);
+		video.currentTime = seekTime;
+		duration = video.duration || 0;
+	};
+
+	const handleFileUpload = (event: Event) => {
+		const input = event.target as HTMLInputElement;
+		if (input.files && input.files.length > 0) {
+			const file = input.files[0];
+			console.log('File uploaded:', file);
+
+			// Create a FileReader to read the file as an ArrayBuffer
+			const reader = new FileReader();
+
+			reader.onload = (e) => {
+				if (e.target?.result) {
+					uploadedArrayBuffer = e.target.result as ArrayBuffer; // Store the ArrayBuffer
+					// console.log('ArrayBuffer:', uploadedArrayBuffer);
+					// Mark file as uploaded
+					fileUploaded = true;
+					videoSource = URL.createObjectURL(file);
+				}
+			};
+
+			reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+		}
+	};
+
+	const fullscreen = () => {
+		video.requestFullscreen();
+	};
 </script>
 
 <svelte:head>
@@ -85,6 +198,7 @@
 		Room {data.room_id}
 	</title>
 </svelte:head>
+{data.room_id}
 
 <!-- To do:
     1. Add Media player
@@ -92,11 +206,49 @@
  -->
 
 {#if host}
-	You are the host
+	You are the host'
+	{#if !fileUploaded}
+		<input type="file" on:change={handleFileUpload} />
+	{/if}
 {:else}
 	You are not the host
 {/if}
 
-<input type="text" bind:value />
-<button on:click={click}>Send</button>
-{data.room_id}
+<center>
+	<div class="">
+		{#if videoSource}
+			<video
+				id="video"
+				bind:duration
+				src={videoSource}
+				bind:this={video}
+				class="flex items-center justify-center flex-shrink-0 w-auto h-auto"
+				on:timeupdate={() => {
+					currentTime = video.currentTime;
+					duration = video.duration || 0;
+				}}
+			>
+				<track kind="captions" />
+			</video>
+		{/if}
+
+		<input
+			type="range"
+			bind:this={slider}
+			min="0"
+			max={duration}
+			value={currentTime}
+			on:input={seekVideo}
+		/>
+		<div id="controls" class="justify-center">
+			<button id="playPauseBtn" class="bg-tangerine rounded px-4 py-2" on:click={playPause}
+				>Play/Pause</button
+			>
+
+			<button id="fullscreenBtn" class="bg-[#B2BEB5] rounded px-4 py-2" on:click={fullscreen}
+				>Fullscreen</button
+			>
+		</div>
+	</div>
+</center>
+<!-- Remove -->
