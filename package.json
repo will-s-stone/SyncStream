@@ -30,6 +30,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-cloudflare-workers": "^2.5.4",
+		"@sveltejs/adapter-node": "^5.2.5",
 		"autoprefixer": "^10.4.20",
 		"mongodb": "^6.9.0",
 		"peer": "^1.0.2",
