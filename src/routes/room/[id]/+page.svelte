@@ -211,14 +211,14 @@
 		Room {data.room_id}
 	</title>
 </svelte:head>
-<div id="banner" class="items-center jusitfy-center flex flex-col text-lg">
-	{data.room_id}
+<div id="banner" class="items-center jusitfy-center flex flex-col text-lg text-center">
+	<b>Room Code: {data.room_id}</b>
 
 	<!-- To do:
     1. Add Media player
     2. Sync times of media player 
  -->
-
+	<br />
 	{#if host}
 		You are the host
 		{#if !fileUploaded}
