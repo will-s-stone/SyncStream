@@ -78,6 +78,14 @@
 						c.con.send(e);
 					}
 					processCommand(e);
+					const seek: Message = {
+						type: 'seek',
+						data: currentTime
+					};
+					for (const c of connections) {
+						c.con.send(seek);
+					}
+					processCommand(seek);
 				};
 				seek = (sec: number) => {
 					const e: Message = {
@@ -131,6 +139,11 @@
 					};
 					console.log(e);
 					connection.send(e);
+					const seek: Message = {
+						type: 'seek',
+						data: currentTime
+					};
+					connection.send(seek);
 				};
 				seek = (sec: number) => {
 					const e: Message = {
