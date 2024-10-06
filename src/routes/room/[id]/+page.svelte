@@ -198,22 +198,23 @@
 		Room {data.room_id}
 	</title>
 </svelte:head>
-{data.room_id}
+<div id="banner" class="items-center jusitfy-center flex flex-col text-lg">
+	{data.room_id}
 
-<!-- To do:
+	<!-- To do:
     1. Add Media player
     2. Sync times of media player 
  -->
 
-{#if host}
-	You are the host'
-	{#if !fileUploaded}
-		<input type="file" on:change={handleFileUpload} />
+	{#if host}
+		You are the host
+		{#if !fileUploaded}
+			<input type="file" on:change={handleFileUpload} />
+		{/if}
+	{:else}
+		You are not the host
 	{/if}
-{:else}
-	You are not the host
-{/if}
-
+</div>
 <center>
 	<div class="">
 		{#if videoSource}
