@@ -42,6 +42,7 @@
 	};
 
 	const processCommand = async (msg: Message) => {
+		console.log('Processing Command: ' + msg);
 		if (isPlayerStatus(msg)) {
 			if (msg.data == 'play') {
 				video.play();
@@ -113,10 +114,10 @@
 						console.log('Sending Video Data');
 						con.send('test');
 						con.send({
-							type: 'fullVideo',
+							type: 'fullVideoMessage',
 							data: uploadedArrayBuffer
 						});
-					}, 2000);
+					}, 500);
 				});
 			}
 
