@@ -13,7 +13,7 @@
 		if (roomCode == '') {
 			alert('Please enter a room code...');
 		} else {
-			window.location.href = '/room/' + roomCode;
+			if (browser) window.location.href = `/room/${roomCode}`;
 		}
 	}
 
