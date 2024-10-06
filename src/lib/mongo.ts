@@ -1,7 +1,12 @@
-import { MongoClient } from "mongodb";
+import { Collection, Document, MongoClient } from 'mongodb';
 import { env } from "$env/dynamic/private"
 
-const client = new MongoClient(env.MONGO_URL!)
+let client: MongoClient;
 
-const database = client.db("SyncStream");
-export const sessions = database.collection("sessions")
+export let sessions: Collection<Document>
+
+	if (env.MONGO_URL) {
+		client = new MongoClient(env.MONGO_URL!)
+		const database = client.db("SyncStream");
+		sessions = database.collection("sessions")
+	}

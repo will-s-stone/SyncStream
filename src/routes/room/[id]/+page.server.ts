@@ -3,6 +3,9 @@ import type { PageServerLoad } from "./$types"
 import { StatusCodes } from "$lib/StatusCodes";
 import { sessions } from "$lib/mongo";
 
+export const ssr = false;
+export const prerender = false;
+
 type Session = {
   _id: string
   room_id: string,
